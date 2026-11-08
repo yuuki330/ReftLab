@@ -58,8 +58,7 @@ a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-vis
             <button type="button" class="btn gold" id="favButton" aria-label="お気に入りに追加">☆ 保存</button>
           </div>
         </div>
-        <div class="detail-meta"><span class="pill accent" id="memoBadge">対面メモあり</span><span class="pill" id="dataBadge">スキル情報を読込中</span><span class="pill">JP / EN 検索対応</span></div>
-      </div>
+              </div>
       <section class="section" aria-labelledby="quickTitle">
         <div class="section-title"><h2 id="quickTitle">⚠ 試合前30秒メモ</h2><button class="btn ghost" id="copyButton" type="button">メモをコピー</button></div>
         <div class="player-picker"><span class="player-label">自分のチャンピオン</span><div class="player-options" role="group" aria-label="自分のチャンピオンを選択"><button type="button" class="player-option" data-player="yone" aria-pressed="true">ヨネ</button><button type="button" class="player-option" data-player="mundo" aria-pressed="false">ムンド</button></div></div>
@@ -73,7 +72,7 @@ a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-vis
       </section>
       <section class="section" aria-label="データについて">
         <div class="section-title"><h2>このページのデータについて</h2></div>
-        <div class="notice">検索用の日本語・英語名はページ内に収録。スキルの日本語説明・CD・射程は、インターネット接続時に<strong>Riot Data Dragon <span id="sourceVersion">16.22.1</span></strong>から取得します。対面メモは学習用の要約であり、全チャンピオン分はまだ用意していません。スキル仕様が変更された場合は公式パッチノートを優先してください。</div>
+        <div class="notice">全173体の日本語名・英語名はページ内に収録しています。スキル説明・射程・CDは、インターネット接続時にRiot Gamesのデータ配信サービス <strong>Data Dragon（データバージョン：<span id="sourceVersion">16.22.1</span>）</strong> から取得しています。これは表示中のスキルデータのバージョンで、ゲームの対面メモの更新日や動画の更新日ではありません。対面メモは学習用の要約で、主にTOP候補47体に収録しています。数値や仕様が異なる場合はゲーム内説明と公式パッチノートを優先してください。</div>
       </section>
     </article>
   </main>
@@ -191,7 +190,7 @@ function renderRoster(){
  });root.append(fragment)
 }
 function addNote(root,title,text){const box=create('div','insight');const h=create('h3',null,title);const p=create('p',null,text);box.append(h,p);root.append(box)}
-function renderNotes(c){const root=$('notesArea');clear(root);const note=MATCHUP[c.id];$('memoBadge').textContent=note?'対面メモあり':'対面メモ未作成';
+function renderNotes(c){const root=$('notesArea');clear(root);const note=MATCHUP[c.id];
  if(!note){root.append(create('div','notice',`${c.jp}の対面メモはまだ作成されていません。以下の公式スキル説明と動画で、まず「接近手段・CC・射程」を確認してください。`));return}
  const alert=create('div','warningbox');alert.append(create('strong',null,'最優先で警戒するスキル'),create('p',null,note.key));root.append(alert);
  const grid=create('div','insight-grid');addNote(grid,'⚠ 何が危険？',note.danger);addNote(grid,'↗ いつ反撃する？',note.window);
@@ -294,14 +293,14 @@ $('videoDialog').addEventListener('close',()=>{const v=$('skillVideo');v.pause()
 $('videoDialog').addEventListener('click',e=>{if(e.target===$('videoDialog'))closeSkillVideo()});
 $('skillVideo').addEventListener('playing',()=>{$('videoStatus').textContent='再生中 — 画面内でスキルの動きを確認できます。';$('videoFallback').hidden=true});
 $('skillVideo').addEventListener('error',()=>{if(!$('videoDialog').open)return;$('videoStatus').textContent='動画を再生できませんでした。外部リンクで確認してください。';$('videoFallback').hidden=false});
-async function loadAbilityData(c,token){$('liveState').replaceChildren(create('i','dot muted'),document.createTextNode('公式データを取得中'));$('dataBadge').textContent='スキル情報を読込中';
+async function loadAbilityData(c,token){$('liveState').replaceChildren(create('i','dot muted'),document.createTextNode('スキル情報を取得中'));
  try{
   const response=await fetch(`https://ddragon.leagueoflegends.com/cdn/${PATCH}/data/ja_JP/champion/${encodeURIComponent(c.id)}.json`,{cache:'force-cache'});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   const data=await response.json();const details=data?.data?.[c.id];if(!details||!Array.isArray(details.spells))throw new Error('詳細が見つかりません');
   if(token!==state.version)return;
-  state.champData=details;renderSkills(c,details);$('dataBadge').textContent=`公式データ ${PATCH}`;$('liveState').replaceChildren(create('i','dot'),document.createTextNode('公式スキルデータ取得済み'));
- }catch(e){if(token!==state.version)return;$('dataBadge').textContent='ネット接続で詳細を表示';$('liveState').replaceChildren(create('i','dot muted'),document.createTextNode('詳細未取得・動画リンクは利用可'))}
+  state.champData=details;renderSkills(c,details);$('liveState').replaceChildren(create('i','dot'),document.createTextNode('公式スキルデータ取得済み'));
+ }catch(e){if(token!==state.version)return;$('liveState').replaceChildren(create('i','dot muted'),document.createTextNode('詳細未取得・動画リンクは利用可'))}
 }
 function selectChampion(id){const c=findChamp(id);if($('videoDialog').open)closeSkillVideo();state.id=c.id;state.champData=null;state.videoSpells=null;state.version++;saved.history=[id,...saved.history.filter(x=>x!==id)].slice(0,12);writeStorage('rift-scout-history',saved.history);
  $('championJP').textContent=c.jp;$('championEN').textContent=c.en;$('portraitLetter').textContent=c.jp[0];$('portrait').style.visibility='visible';$('portrait').src=iconURL(c.id);$('portrait').alt=`${c.jp}のアイコン`;const url=memURL(c);
