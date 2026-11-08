@@ -1,39 +1,36 @@
-# my-lol-app
+# ReftLab
 
-個人用 League of Legends 学習ツール集。現在は **RIFT SCOUT（日本語対応・対面スキル検索）** を公開準備中です。
+個人用 League of Legends 学習ツール集。公開URL：**https://yuuki330.github.io/ReftLab/**
+
+現在の機能は **RIFT SCOUT（日本語対応・対面スキル検索）** です。
 
 ## RIFT SCOUT
 
-- 日本語・ひらがな・英語・一部通称でチャンピオン検索
-- 173体の名前データと、主要TOP対面の警戒スキル／反撃の条件／ヨネ・ムンド視点のメモ
-- Riot Data Dragon による日本語スキル説明・射程・クールダウンの取得（ネット接続が必要）
-- Memorize LoL へのスキル動画リンク
-- TOP / JG の絞り込み、お気に入り、スマートフォン対応
+- 日本語・ひらがな・英語・一部通称で173チャンピオンを検索
+- TOP候補47体の警戒スキル・反撃条件などの対面メモ
+- 自分のチャンピオン（ヨネ／ムンド）に応じた対策を切り替え、ブラウザに選択状態を保存
+- Riot Data Dragonによる日本語スキル説明・射程・クールダウンの取得（インターネット接続が必要）
+- **ジャックス／ヨリック／ザーヘンのQ/W/E/R動画をサイト内で試験再生**
+- それ以外はMemorize LoLへのスキル動画リンク。試験再生失敗時も外部リンクへ切り替え可能
+- TOP/JG絞り込み、お気に入り、スマートフォン対応
 
-アプリ本体はリポジトリ直下の `index.html`。サーバー、ビルド、APIキーは不要です。
+アプリ本体はルートの `index.html`。GitHub Pagesの `main` / `/(root)` から公開する静的ページです。
 
-## GitHub Pages の公開設定
+### 試験再生について
 
-1. GitHub の **Settings → Pages** に移動。
-2. **Build and deployment → Source** で **Deploy from a branch** を選択。
-3. Branch を **main**、フォルダーを **/(root)** とし、**Save**。
-4. 公開が完了したら `https://yuuki330.github.io/my-lol-app/` にアクセス。
+3チャンピオンの動画はCommunityDragonのチャンピオンデータに記載された `abilityVideoPath` の形式を元に、Riot配信CDNから再生します。**動画ファイルはリポジトリに保存しません**。
 
-公開状況は GitHub Pages の設定画面でも確認できます。
+動作には通信環境・配信元のアクセス可否・ブラウザのWebM対応が必要です。配信元の仕様変更などで再生できない場合は、元動画リンクまたはMemorize LoLを使用してください。動画がブラウザ上で再生できるかは利用環境での確認が必要です。
 
 ## 今後の拡張案
 
-- 対面相性マトリクス（レーン指標／試合勝率／時間帯別の戦い方）
-- チャンピオン別のピック判断とアイテム学習
-- TOP・JG の座学、練習メニュー、試合振り返り
+- 再生テストの結果を確認して動画対象チャンピオンを拡大
+- 対面相性マトリクス（レーン戦／試合全体／時間帯別）
+- TOP・JGの練習メニューと振り返り
+- アイテムやピック判断の学習
 
-今後の機能追加に合わせてページ構成を拡張する想定です。
+## 免責
 
-## 注意事項
+非公式の個人学習用ツール。Riot GamesおよびMemorize LoLとの提携はありません。スキルの効果や数値は実際のゲーム内説明と最新パッチを優先してください。
 
-- 動画は外部サイト Memorize LoL で再生します。動画の埋め込みや転載はしません。
-- スキル説明・射程などは元データの仕様や取得状況により不完全なことがあります。
-- 試合中の判断は実際のゲーム内説明および最新パッチ情報を優先してください。
-- Riot Games／Memorize LoL の公式アプリではありません。
-
-参考：[League of Legends 公式チャンピオン一覧](https://www.leagueoflegends.com/ja-jp/champions/) ・ [Riot Data Dragon](https://developer.riotgames.com/docs/lol) ・ [Memorize LoL](https://www.memlol.com/)
+参照：[Riot Data Dragon](https://developer.riotgames.com/docs/lol) / [CommunityDragon](https://communitydragon.org/docs/assets) / [Memorize LoL](https://www.memlol.com/)
