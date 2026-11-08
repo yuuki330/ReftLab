@@ -127,7 +127,7 @@ a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-vis
   <section id="trainingView" class="training-view" aria-labelledby="trainingTitle" hidden>
     <div class="training-heading">
       <div><span class="eyebrow">MY CHAMPION / PRACTICE</span><h1 id="trainingTitle">ヨネの練習ライブラリ</h1>
-        <p>コンボは動画の該当区間を見て操作を練習。対面動画は実戦の序盤を観察して、スキルの使用前後に注目する。</p></div>
+        <p>2026年のコンボ教材と高レート対面リプレイを収録。実際の交戦シーンを確認しながら、操作と判断を練習する。</p></div>
       <span class="training-champion">ヨネ / TOP ・ 試作版</span>
     </div>
     <div class="training-groups" role="group" aria-label="練習テーマ">
@@ -151,11 +151,11 @@ a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-vis
           <div class="training-info"><strong>何を見る？</strong><p id="trainingWatch"></p></div>
           <div class="training-info"><strong>どう使う・練習する？</strong><p id="trainingDrill"></p></div>
         </div>
-        <div class="training-actions"><a class="btn" id="trainingSourceLink" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">↗ YouTubeで元動画を見る</a><span id="trainingSource" class="training-meta"></span></div>
-        <p class="training-help">YouTubeの公式埋め込みプレイヤーを使用。再生できない場合は元動画から確認してください。</p>
+        <div class="training-actions"><a class="btn" id="trainingSourceLink" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">↗ 元の動画・教材を開く</a><span id="trainingSource" class="training-meta"></span></div>
+        <p class="training-help">YouTube動画は公式埋め込みプレイヤーで再生。Mobalyticsのコンボ動画は外部サイトで開きます。再生できないときは元の教材へ移動してください。</p>
       </div>
     </div>
-    <p class="training-disclaimer" id="trainingDisclaimer">コンボ動画は2020年の収録のため、現行パッチと差がある可能性があります。対面クリップは高レート試合から切り出した<strong>観察用の時間区間</strong>で、具体的なスキル使用シーンや判断理由を映像で個別検証したものではありません。まず観察項目を持って視聴し、事実と推測を区別してください。</p>
+    <p class="training-disclaimer" id="trainingDisclaimer">コンボ集はSeason 26向けの掲載内容ですが、個別動画の撮影年・埋め込み可否は未確認です。2026年のYouTube総合ガイドはコンボの該当秒数が未確認です。対面クリップは投稿者が明示したイベント時刻に基づきますが、<strong>スキルの使用や判断理由は映像で個別検証していません</strong>。パッチの違いも考慮し、映像から確認できた事実と解釈を分けてください。</p>
   </section>
   <dialog id="videoDialog" class="video-dialog" aria-labelledby="videoTitle">
     <div class="video-head"><strong id="videoTitle">スキル動画</strong><button type="button" id="videoClose" class="video-close" aria-label="動画を閉じる">✕ 閉じる</button></div>
@@ -398,11 +398,13 @@ document.querySelectorAll('[data-quick]').forEach(el=>el.addEventListener('click
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){e.preventDefault();$('searchInput').focus()}if(e.key==='Escape'&&document.activeElement===$('searchInput')){$('searchInput').value='';state.q='';renderRoster();$('searchInput').blur()}if(e.key==='Enter'&&document.activeElement===$('searchInput')){const first=$('roster').querySelector('.champ-btn');if(first)first.click()}});
 $('copyButton').addEventListener('click',async()=>{const c=findChamp(state.id),n=MATCHUP[c.id];const text=[`対面: ${c.jp} (${c.en})`,n?`自分: ${PLAYER_NAMES[state.player]}\n注意: ${n.key}\n危険: ${n.danger}\n反撃: ${n.window}\n${PLAYER_NAMES[state.player]}での対処: ${n[state.player]}`:'メモ未作成・スキル情報を確認',`動画: ${memURL(c)}`].join('\n');try{await navigator.clipboard.writeText(text);$('copyButton').textContent='コピー完了 ✓';setTimeout(()=>$('copyButton').textContent='メモをコピー',1500)}catch{prompt('ここからコピーしてください',text)}});
 
-const TRAINING_CLIPS=[{"id":"aa-q","group":"combo","title":"AA → Q → AA の基本","subtitle":"通常攻撃の間にQを挟む","youtube":"f_M6faixOsU","start":4,"end":30,"tag":"基本操作","watch":"通常攻撃の命中からQを入力するタイミング。操作後も次の通常攻撃が遅れず出ているか。","drill":"練習ツールでダミーにAA → Q → AAを5回。入力だけでなく、敵が反撃できる距離かも確認する。","source":"Flügerl / コンボ動画・2020"},{"id":"q3-trade","group":"combo","title":"Q3からの短いトレード","subtitle":"打ち上げ後の追撃と離脱","youtube":"f_M6faixOsU","start":55,"end":63,"tag":"レーン戦","watch":"Q3で距離を詰める前の位置、打ち上げ後に入れるAAやW、深追いせず戻る距離。","drill":"Qを2回当ててQ3を準備し、Q3 → AA → Wを練習。実戦では相手のCCが残っていないかも確認する。","source":"Flügerl / コンボ動画・2020"},{"id":"q3-r","group":"combo","title":"Q3 → R のCC連携","subtitle":"打ち上げからRへつなぐ","youtube":"f_M6faixOsU","start":63,"end":68,"tag":"Lv.6以降","watch":"Q3を命中させた後、相手が移動できない間にRの位置を合わせる手順。","drill":"Qを2回溜めてQ3 → Rを5回。操作だけでなく、Rを外すと反撃される状況も考える。","source":"Flügerl / コンボ動画・2020"},{"id":"e-allin","group":"combo","title":"E → Q3 → R のオールイン","subtitle":"帰還地点も含めて考える","youtube":"f_M6faixOsU","start":68,"end":74,"tag":"Lv.6以降","watch":"Eの起点、Q3で踏み込む距離、Rの当て方、Eで戻った先の安全性。","drill":"Q3を準備してE → Q3 → R → E帰還。帰還地点がタワーや敵JGから安全か毎回確認する。","source":"Flügerl / コンボ動画・2020"},{"id":"e-path","group":"combo","title":"Eで相手の退路を制限する","subtitle":"上級：立ち位置を作る","youtube":"f_M6faixOsU","start":80,"end":92,"tag":"発展","watch":"E使用後にどちら側へ移動し、相手の逃げ道を狭めているか。","drill":"最初は操作模倣より、『Eを使う前に帰還位置を決める』ことを意識する。","source":"Flügerl / コンボ動画・2020"},{"id":"q3-flash","group":"combo","title":"Q3 → フラッシュ","subtitle":"上級：打ち上げ位置を変える","youtube":"f_M6faixOsU","start":97,"end":106,"tag":"発展","watch":"Q3の入力とフラッシュの入力順、フラッシュ後に当たり判定が出る位置。","drill":"練習ツールで試し、成功率が安定するまでは実戦で無理に狙わない。","source":"Flügerl / コンボ動画・2020"},{"id":"jax-early","group":"jax","title":"序盤のCSと接近判断","subtitle":"対面リプレイ：序盤区間①","youtube":"-sjPdpgGwOU","start":30,"end":220,"tag":"対面観察","watch":"ジャックスのQによる接近射程、ヨネのCSを取る位置、双方のHPとミニオン数。","drill":"再生を止めながら『このCSを取るためにどこまで前に出るか』を予測する。特定のQ・E使用シーンを検証済みという意味ではない。","source":"domisumReplay / KR Grandmaster・25.19"},{"id":"jax-trade","group":"jax","title":"反撃できるタイミングを観察","subtitle":"対面リプレイ：序盤区間②","youtube":"-sjPdpgGwOU","start":220,"end":430,"tag":"対面観察","watch":"ジャックスのE使用前後でヨネが前進・後退するか。Q3を使える場面か。","drill":"敵Eの使用・終了を自分で記録し、『残っているときは何をしないか』を決める。映像の該当場面は未検証。","source":"domisumReplay / KR Grandmaster・25.19"},{"id":"yorick-early","group":"yorick","title":"Eの射線とCSの位置","subtitle":"対面リプレイ：序盤区間①","youtube":"kRHdLq4RJ7A","start":30,"end":220,"tag":"対面観察","watch":"ヨリックEの届く位置、ミニオンを盾にできる場所、ヨネがCSに近づくタイミング。","drill":"Eが当たる／外れる状況を見分ける。映像にE命中が確実に含まれると確認した区間ではない。","source":"domisumReplay / KR Master・25.8"},{"id":"yorick-ghouls","group":"yorick","title":"召喚物とWの檻への対応","subtitle":"対面リプレイ：序盤区間②","youtube":"kRHdLq4RJ7A","start":220,"end":430,"tag":"対面観察","watch":"霧の歩行者の数、ヨリックのWを警戒する立ち位置、ヨネのE帰還位置。","drill":"『召喚物が少なくEを外したら反撃候補』という仮説を、実際の映像と照合して判断する。対象行動の発生秒数は未確認。","source":"domisumReplay / KR Master・25.8"}];
-const trainingState={group:'combo',selected:'aa-q'};
+const TRAINING_CLIPS=[{"id":"combo-core","group":"combo","kind":"external","title":"E → Q3 → AA → W → AA → E","subtitle":"基本：Q3を準備して短く交換","url":"https://mobalytics.gg/lol/champions/yone/combos","tag":"Season 26・操作例","watch":"MobalyticsのE→Q→AA→W→AA→AA→Q→Eに近い項目を選び、Q3を事前に準備する動きと通常攻撃の挟み方を見る。掲載ページの動画製作年は未確認。","drill":"練習ツールでQを2回当ててからE→Q3→AA→W→AA→Eで帰還。まず5回、帰還地点の安全まで確認する。","source":"Mobalytics / Season 26 コンボ集"},{"id":"combo-r","group":"combo","kind":"external","title":"E → R → Q3 → AA → W → E","subtitle":"応用：Rを使う連続コンボ","url":"https://mobalytics.gg/lol/champions/yone/combos","tag":"Season 26・操作例","watch":"Mobalyticsの『Q3を準備→E→R→Q→AA→W…→E』の動画・入力順を見る。実戦では相手のCCや移動スキルの有無を考える。","drill":"Q3準備→E→R→Q3→AA→W→E帰還を試す。動画と入力順が異なる場合はゲーム内で成立するか確認する。","source":"Mobalytics / Season 26 コンボ集"},{"id":"combo-allin","group":"combo","kind":"external","title":"E → Q3 → AA → R → W → E","subtitle":"応用：Q3からRへつなぐ","url":"https://mobalytics.gg/lol/champions/yone/combos","tag":"Season 26・操作例","watch":"Mobalyticsの『Q×2→E→Q→AA→R→…→E』に相当するコンボを選び、Q3からRへつなぐ位置を確認する。","drill":"Q2スタック→E→Q3→AA→R→W→Eを繰り返し、Rが当たらないときは追いすぎない判断も練習する。","source":"Mobalytics / Season 26 コンボ集"},{"id":"combo-guide-2026","group":"combo","kind":"youtube","title":"2026年版ヨネ総合ガイド","subtitle":"動画全編・コンボ場面の秒数は未確認","youtube":"g1ge0c2umPs","start":0,"end":null,"tag":"2026年2月公開","watch":"2026年版のヨネ解説。コンボ・スキル運用に関する具体的な説明があるかを視聴して確認する。コンボの個別開始秒数までは検証していない。","drill":"動画で使えそうなコンボを1つ選び、練習ツールで5回試す。現行パッチで挙動が違わないかも確認する。","source":"Raksi / Guide to Yone 2026（2026-02-20）"},{"id":"jax-first-2026","group":"jax","kind":"youtube","title":"序盤のファーストブラッド前後","subtitle":"投稿者タイムライン：00:51 First Blood","youtube":"r-V6jzDhlfg","start":35,"end":82,"tag":"26.17・KR Master","watch":"0:51のキル前後で、双方のHP・ミニオン数・Q3準備状況・JaxのEの有無を確認。キル原因の断定はしない。","drill":"勝負前の状況で停止し『自分なら仕掛けるか』を決めてから続きを見る。Eの使用秒数は未検証。","source":"Yone Challenger Replays / KR Master（2026-08-28）"},{"id":"jax-catch-2026","group":"jax","kind":"youtube","title":"ジャックスとの2回目の交戦","subtitle":"投稿者タイムライン：02:01 catches Jax","youtube":"r-V6jzDhlfg","start":107,"end":149,"tag":"26.17・KR Master","watch":"2:01の交戦時にどちらが先に前進したか、Q・Eの使用タイミングとミニオン配置を観察する。","drill":"交戦を1回見てから、相手Eの前後で自分が取るべき行動をメモする。映像で細かい操作を個別確認したわけではない。","source":"Yone Challenger Replays / KR Master（2026-08-28）"},{"id":"yorick-early-2026","group":"yorick","kind":"youtube","title":"レーン戦序盤のCSと間合い","subtitle":"投稿者タイムライン：01:37 Gameplay","youtube":"8WMdro8aCTk","start":97,"end":236,"tag":"26.03・KR Master","watch":"ヨリックのE射線、QでCSを取る位置、歩行者や墓の数に注目する。E命中場面が含まれるかは未検証。","drill":"動画を止めながら『今Eを避けるにはどこに立つか』を考え、ミニオンとの位置関係を確認する。","source":"Challenger Replays / KR Master（2026-02-13）"},{"id":"yorick-kill-2026","group":"yorick","kind":"youtube","title":"ソロキル前後の判断を観察","subtitle":"投稿者タイムライン：15:16 SOLO KILL","youtube":"8WMdro8aCTk","start":900,"end":947,"tag":"26.03・KR Master","watch":"15:16に投稿者が示したソロキル前後。仕掛ける時のHP差とスキル状況、乙女と歩行者の有無を確認する。","drill":"キル直前で停止し『今、戦うか退くか』を判断する。具体的なスキル使用や勝因は未検証。","source":"Challenger Replays / KR Master（2026-02-13）"}];
+const trainingState={group:'combo',selected:'combo-core'};
 const TRAINING_GROUPS={combo:'基本コンボ',jax:'vs ジャックス',yorick:'vs ヨリック'};
 const trainItem=id=>TRAINING_CLIPS.find(x=>x.id===id);
 const clipTime=seconds=>String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+const trainingTimeLabel=item=>item.kind==='external'?'外部コンボ動画':item.end!=null?clipTime(item.start)+' 〜 '+clipTime(item.end):'動画全編';
+const trainingSourceURL=item=>item.kind==='external'?item.url:'https://www.youtube.com/watch?v='+encodeURIComponent(item.youtube)+(item.start?'&t='+item.start+'s':'');
 function stopTrainingPlayer(){
  const frame=$('trainingFrame');frame.removeAttribute('src');frame.hidden=true;$('trainingPlay').hidden=false;
 }
@@ -410,26 +412,30 @@ function renderTrainingList(){
  const list=$('trainingList');clear(list);
  for(const item of TRAINING_CLIPS.filter(x=>x.group===trainingState.group)){
   const b=create('button','training-item');b.type='button';b.setAttribute('aria-current',String(item.id===trainingState.selected));
-  b.append(create('strong',null,item.title),create('span',null,clipTime(item.start)+' 〜 '+clipTime(item.end)+' ・ '+item.tag),create('small',null,item.subtitle));
-  b.addEventListener('click',()=>selectTrainingClip(item.id,true));list.append(b);
+  b.append(create('strong',null,item.title),create('span',null,trainingTimeLabel(item)+' ・ '+item.tag),create('small',null,item.subtitle));
+  b.addEventListener('click',()=>selectTrainingClip(item.id,item.kind==='youtube'));list.append(b);
  }
 }
 function selectTrainingClip(id,play=false){
  const item=trainItem(id);if(!item)return;
  trainingState.selected=id;stopTrainingPlayer();renderTrainingList();
  $('trainingTag').textContent=item.tag;
- $('trainingTime').textContent=clipTime(item.start)+' - '+clipTime(item.end);
+ $('trainingTime').textContent=trainingTimeLabel(item);
  $('trainingClipTitle').textContent=item.title;
  $('trainingWatch').textContent=item.watch;
  $('trainingDrill').textContent=item.drill;
  $('trainingSource').textContent=item.source;
- $('trainingSourceLink').href='https://www.youtube.com/watch?v='+encodeURIComponent(item.youtube)+'&t='+item.start+'s';
- if(play)playTrainingClip();
+ $('trainingSourceLink').href=trainingSourceURL(item);
+ $('trainingPlay').textContent=item.kind==='external'?'↗ コンボ動画の掲載元を開く':'▶ '+(item.end!=null?'この区間を再生':'動画を再生');
+ if(play&&item.kind==='youtube')playTrainingClip();
 }
 function playTrainingClip(){
  const item=trainItem(trainingState.selected);if(!item)return;
+ if(item.kind==='external'){window.open(trainingSourceURL(item),'_blank','noopener,noreferrer');return;}
  const frame=$('trainingFrame');
- frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(item.youtube)+'?start='+item.start+'&end='+item.end+'&rel=0&playsinline=1&autoplay=1';
+ const start=item.start?'&start='+item.start:'';
+ const end=item.end!=null?'&end='+item.end:'';
+ frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(item.youtube)+'?rel=0&playsinline=1&autoplay=1'+start+end;
  frame.hidden=false;$('trainingPlay').hidden=true;
 }
 function setTrainingGroup(group){
