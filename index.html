@@ -68,8 +68,9 @@ a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-vis
       </section>
       <section class="section" aria-labelledby="skillsTitle">
         <div class="section-title"><h2 id="skillsTitle">スキルを確認 <span style="color:var(--gold)">Q / W / E / R</span></h2><span id="liveState"><i class="dot muted"></i>公式データを取得中</span></div>
+        <p class="smallprint" id="videoAvailability" role="status" aria-live="polite">スキル動画を確認中…</p>
         <div class="skills" id="skills"></div>
-        <p class="smallprint">ジャックス・ヨリック・ザーヘンはQ/W/E/Rをサイト内で試験再生できます。動画はRiot配信の外部CDNから読み込み、ReftLabには保存しません。動画が利用できない場合はMemorize LoLへのリンクを使ってください。その他のチャンピオンは従来どおり外部リンクです。射程・CDは取得可能な公式データを表示します。</p>
+        <p class="smallprint">全チャンピオンのQ/W/E/Rについて、配信元の動画パスを取得してサイト内再生に対応します。動画ファイルはReftLabに保存しません。動画未提供・取得失敗・再生不可の場合はMemorize LoLを利用できます。射程・CDは取得可能なスキルデータを表示します。</p>
       </section>
       <section class="section" aria-label="データについて">
         <div class="section-title"><h2>このページのデータについて</h2></div>
@@ -91,6 +92,8 @@ const TOP_IDS=new Set('Aatrox Ambessa Aurora Camille Chogath Darius DrMundo Fior
 // Trial in-page playback: numeric champion IDs confirmed in CommunityDragon champion data.
 const PILOT_VIDEO_IDS={Jax:24,Yorick:83,Zaahen:904};
 const VIDEO_CDN='https://d28xe8vt774jo5.cloudfront.net/';
+const CDRAGON_ROOT='https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1';
+const videoCache=new Map();let summaryPromise=null;
 const VIDEO_PATH_ROOT='champion-abilities/';
 const JG_IDS=new Set('Amumu Belveth Briar Diana Ekko Elise Evelynn Fiddlesticks Graves Gwen Hecarim Ivern JarvanIV Karthus Kayn Khazix Kindred LeeSin Lillia MasterYi Naafiri Nidalee Nocturne Nunu Olaf Poppy Rammus RekSai Rengar Sejuani Shaco Shyvana Skarner Taliyah Talon Trundle Udyr Vi Viego Volibear Warwick Wukong XinZhao Zac'.split(' '));
 // 注意: role tags are curated candidates, not official meta/tier labels.
@@ -146,7 +149,7 @@ const MATCHUP={
  Warwick:{"key":"Q（噛みつき・追尾）＋ E（恐怖）＋ R（突進・制圧）","danger":"HPが減るほど追いかけやすく、攻撃で回復する。Eの恐怖とRの制圧で逃走を阻まれる。","window":"E・Rを使った後なら強いCCが減る。低HPの相手でも回復を見込んで判断する。","yone":"低HPのワーウィックを倒し切れると決めつけない。Eの恐怖から距離を取る。","mundo":"Qで距離を維持し、長く殴り合って回復させない。Rの進路を警戒。","tag":"自己回復 / 恐怖 / 制圧"},
 };
 const $=(id)=>document.getElementById(id);
-const state={id:'Jax',q:'',filter:'all',champData:null,version:0};
+const state={id:'Jax',q:'',filter:'all',champData:null,videoSpells:null,version:0};
 function readStorage(k,f){try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}}
 const saved={fav:new Set(readStorage('rift-scout-favorites',[])),history:readStorage('rift-scout-history',[])};
 const storedPlayer=readStorage('rift-scout-player','yone');
@@ -204,12 +207,60 @@ function updatePlayerButtons(){document.querySelectorAll('[data-player]').forEac
 function formatCD(v){if(!v||v==='0'||v==='0 / 0 / 0 / 0 / 0')return '—';return String(v).replaceAll(' / ',' / ')}
 function formatRange(v){if(v==null)return '—';const n=Number(v);if(!Number.isFinite(n)||n<=0||n>=2500)return '—';return String(v)}
 function spellDescription(s){const t=s.description||s.tooltip||'';const e=document.createElement('div');e.innerHTML=t;let value=e.textContent||'';value=value.replace(/\{\{[^}]+\}\}/g,'数値').replace(/\s+/g,' ').trim();return value.length>128?value.slice(0,128)+'…':value||'詳細は動画で確認'}
+function checkedMediaURL(path,ext){
+ if(typeof path!=='string')return null;
+ const p=path.replace(/^\/+/,'');
+ if(!new RegExp('^champion-abilities/[a-zA-Z0-9/_-]+\\.'+ext+'$','i').test(p))return null;
+ return VIDEO_CDN+p;
+}
 function videoAsset(c,key){
+ if(state.id!==c.id)return null;
+ if(state.videoSpells&&state.videoSpells[key])return state.videoSpells[key];
  const id=PILOT_VIDEO_IDS[c.id];if(!id||!['Q','W','E','R'].includes(key))return null;
- const padded=String(id).padStart(4,'0');
- // Official preview pattern; do not infer paths for champions beyond the 3 verified pilots.
- const stem=`${VIDEO_PATH_ROOT}${padded}/ability_${padded}_${key}1`;
+ const pad=String(id).padStart(4,'0'),stem=VIDEO_PATH_ROOT+pad+'/ability_'+pad+'_'+key+'1';
  return {src:VIDEO_CDN+stem+'.webm',poster:VIDEO_CDN+stem+'.jpg'};
+}
+function getCDragonSummaries(){
+ if(!summaryPromise)summaryPromise=fetch(CDRAGON_ROOT+'/champion-summary.json',{cache:'force-cache'})
+  .then(async r=>{if(!r.ok)throw Error('summary '+r.status);const data=await r.json();if(!Array.isArray(data))throw Error('Invalid summary');return data})
+  .catch(e=>{summaryPromise=null;throw e});
+ return summaryPromise;
+}
+async function getCDragonVideos(c){
+ if(videoCache.has(c.id))return videoCache.get(c.id);
+ const task=(async()=>{
+  const summary=await getCDragonSummaries();
+  const rec=summary.find(x=>Number.isInteger(x.id)&&x.id>0&&(norm(x.alias)===norm(c.id)||norm(x.name)===norm(c.en)));
+  if(!rec)throw Error('Unmapped champion '+c.id);
+  const r=await fetch(CDRAGON_ROOT+'/champions/'+rec.id+'.json',{cache:'force-cache'});
+  if(!r.ok)throw Error('champion '+r.status);
+  const d=await r.json();
+  if(!Array.isArray(d.spells))throw Error('Spells unavailable');
+  const out={};
+  for(const k of ['Q','W','E','R']){
+   const s=d.spells.find(x=>String(x.spellKey||'').toUpperCase()===k);
+   if(!s)continue;
+   const src=checkedMediaURL(s.abilityVideoPath,'webm');
+   if(src)out[k]={src,poster:checkedMediaURL(s.abilityVideoImagePath,'jpe?g')};
+  }
+  return out;
+ })();
+ videoCache.set(c.id,task);
+ task.catch(()=>{if(videoCache.get(c.id)===task)videoCache.delete(c.id)});
+ return task;
+}
+async function loadChampionVideos(c,token){
+ try{
+  const videos=await getCDragonVideos(c);
+  if(token!==state.version)return;
+  state.videoSpells=videos;
+  const count=['Q','W','E','R'].filter(k=>videoAsset(c,k)).length;
+  $('videoAvailability').textContent=count?'サイト内動画：'+count+'/4スキル（配信元の収録状況によります）':'このチャンピオンの動画は未提供です。外部リンクをご利用ください。';
+  renderSkills(c,state.champData);
+ }catch(e){
+  if(token!==state.version)return;
+  $('videoAvailability').textContent=PILOT_VIDEO_IDS[c.id]?'動画情報の取得に失敗しました。確認済みの試作動画は利用できます。':'動画情報を取得できませんでした。外部リンクで確認してください。';
+ }
 }
 function renderSkills(c,detail=null){const root=$('skills');clear(root);const spells=detail?.spells||[];['Q','W','E','R'].forEach((key,i)=>{
   const s=spells[i],card=create('div','skillcard');const head=create('div','skillhead');const keycap=create('span','keycap',key);const wrap=create('div','skilltitle');wrap.append(create('b',null,s?.name||`${key} スキル`),create('small',null,s?'公式日本語名':'公式データ未取得'));head.append(keycap,wrap);card.append(head);
@@ -217,7 +268,7 @@ function renderSkills(c,detail=null){const root=$('skills');clear(root);const sp
   const stats=create('div','skillstats');stats.append(create('span',null,`射程 ${s?formatRange(s.rangeBurn):'—'}`),create('span',null,`CD ${s?formatCD(s.cooldownBurn):'—'}`));card.append(stats);
   const actions=create('div','skill-actions');
   if(videoAsset(c,key)){
-    const play=create('button','btn skillbtn inline',`▶ ${key} をサイト内で再生（試作）`);play.type='button';play.addEventListener('click',()=>openSkillVideo(c,key,s?.name||'スキル'));actions.append(play)
+    const play=create('button','btn skillbtn inline',`▶ ${key} をサイト内で再生`);play.type='button';play.addEventListener('click',()=>openSkillVideo(c,key,s?.name||'スキル'));actions.append(play)
   }
   const a=create('a','btn skillbtn',videoAsset(c,key)?`↗ ${key} をMemorize LoLで見る`:`▶ ${key} の動画を見る ↗`);a.href=memURL(c);a.target='_blank';a.rel='noopener noreferrer';a.title=`Memorize LoLを開き、${key}のタブを選択`;actions.append(a);card.append(actions);root.append(card)
  });
@@ -233,7 +284,7 @@ function openSkillVideo(c,key,skillName){
  $('videoTitle').textContent=`${c.jp} / ${key}：${skillName}`;
  $('videoStatus').textContent='動画を読み込み中… 再生されなければ下の外部リンクを利用してください。';
  $('videoOriginal').href=asset.src;$('videoMemlol').href=memURL(c);
- v.poster=asset.poster;v.src=asset.src;v.load();
+ if(asset.poster)v.poster=asset.poster;else v.removeAttribute('poster');v.src=asset.src;v.load();
  if(!dialog.open)dialog.showModal();
  v.play().catch(()=>{$('videoStatus').textContent='自動再生できない場合は動画中央の再生ボタンを押してください。再生できない場合は外部リンクを利用してください。'});
 }
@@ -251,9 +302,9 @@ async function loadAbilityData(c,token){$('liveState').replaceChildren(create('i
   state.champData=details;renderSkills(c,details);$('dataBadge').textContent=`公式データ ${PATCH}`;$('liveState').replaceChildren(create('i','dot'),document.createTextNode('公式スキルデータ取得済み'));
  }catch(e){if(token!==state.version)return;$('dataBadge').textContent='ネット接続で詳細を表示';$('liveState').replaceChildren(create('i','dot muted'),document.createTextNode('詳細未取得・動画リンクは利用可'))}
 }
-function selectChampion(id){const c=findChamp(id);state.id=c.id;state.champData=null;state.version++;saved.history=[id,...saved.history.filter(x=>x!==id)].slice(0,12);writeStorage('rift-scout-history',saved.history);
+function selectChampion(id){const c=findChamp(id);if($('videoDialog').open)closeSkillVideo();state.id=c.id;state.champData=null;state.videoSpells=null;state.version++;saved.history=[id,...saved.history.filter(x=>x!==id)].slice(0,12);writeStorage('rift-scout-history',saved.history);
  $('championJP').textContent=c.jp;$('championEN').textContent=c.en;$('portraitLetter').textContent=c.jp[0];$('portrait').style.visibility='visible';$('portrait').src=iconURL(c.id);$('portrait').alt=`${c.jp}のアイコン`;const url=memURL(c);$('memlolButton').href=url;
- updateFav();renderNotes(c);renderSkills(c);renderRoster();loadAbilityData(c,state.version)
+ $('videoAvailability').textContent='スキル動画を確認中…';updateFav();renderNotes(c);renderSkills(c);renderRoster();loadAbilityData(c,state.version);loadChampionVideos(c,state.version)
 }
 function updateFav(){const fav=saved.fav.has(state.id);$('favButton').textContent=fav?'★ 保存済み':'☆ 保存';$('favButton').setAttribute('aria-label',fav?'お気に入りから外す':'お気に入りに追加')}
 function setFilter(f){state.filter=f;document.querySelectorAll('.filter').forEach(el=>{el.classList.toggle('active',el.dataset.filter===f);el.setAttribute('aria-pressed',String(el.dataset.filter===f))});renderRoster()}
